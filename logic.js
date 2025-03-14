@@ -9,22 +9,9 @@ function getComputerChoice() {
     return choices[Math.floor(Math.random() * 3)];
 }
 
-// Function to get human's choice
-function getHumanChoice() {
-    let choice = '';
-    while (true) {
-        choice = prompt('Enter Rock, Paper, or Scissors').toLowerCase();
-        if ([ROCK, PAPER, SCISSORS].includes(choice)) {
-            break;
-        }
-        console.log('Invalid selection, try again.');
-    }
-    return choice;
-}
-
 // Function to play a single round
 function playRound(humanChoice, computerChoice) {
-    console.log(`Player chose ${humanChoice}.\nComputer chose ${computerChoice}`);
+    alert(`Player chose ${humanChoice}.\nComputer chose ${computerChoice}`);
 
     if (humanChoice === computerChoice) {
         return 0; // Tie
@@ -39,32 +26,93 @@ function playRound(humanChoice, computerChoice) {
     return winConditions[humanChoice] === computerChoice ? 2 : 1; // 2 for human win, 1 for computer win
 }
 
-// Main game loop
-let humanScore = 0, computerScore = 0;
+// Function to update the score and results to the existing DOM element
+function updateResults(result, humanScore, computerScore) {
+    let resultsDiv = document.querySelector(".results"); // return null if it doesnt exist
 
-console.log('Let\'s play a game!');
-for (let i = 0; i < 5; i++) {
-    const playerChoice = getHumanChoice();
-    const compChoice = getComputerChoice();
-    const result = playRound(playerChoice, compChoice);
+    // If there's no results div yet, create one
+    if (!resultsDiv) {
+        resultsDiv = document.createElement("div");
+        resultsDiv.classList.add("results");
+        document.body.appendChild(resultsDiv); // append to the results div
+    }
 
+    // Clear existing children and add new content
+    resultsDiv.replaceChildren();  // Clear the div content
+
+    // Create the result text element
+    const resultText = document.createElement("p");
     if (result === 2) {
-        console.log('Human won!');
-        humanScore++;
+        resultText.textContent = "Human won this round!";
     } else if (result === 1) {
-        console.log("Computer won");
-        computerScore++;
+        resultText.textContent = "Computer won this round!";
     } else {
-        console.log("It's a draw.");
+        resultText.textContent = "It's a draw.";
+    }
+
+    // Create the score display
+    const scoreText = document.createElement("p");
+    scoreText.textContent = `Current score: Human -> ${humanScore} | Computer -> ${computerScore}`;
+
+    // Append the new result and score to the results div
+    resultsDiv.appendChild(resultText);
+    resultsDiv.appendChild(scoreText);
+}
+
+// Function to remove the results div at the end of the game
+function clearResults() {
+    const resultsDiv = document.querySelector(".results");
+    if (resultsDiv) {
+        resultsDiv.remove();  // Remove the results div when the game is over
     }
 }
 
-// Display final results
-console.log('The game is now over.');
-if (humanScore > computerScore) {
-    console.log('You won!');
-} else if (computerScore > humanScore) {
-    console.log('The computer won.');
-} else {
-    console.log('It was a draw.');
-}
+// Main game loop
+let humanScore = 0, computerScore = 0;
+let count = 0;
+
+alert("Let's play a game! Select a button");
+
+const buttons = document.querySelectorAll("button");
+
+// Add an event listener for each button
+buttons.forEach(btn => {
+    btn.addEventListener("click", (event) => {
+        const clickedButton = event.target;
+        const humanChoice = clickedButton.textContent;
+        const compChoice = getComputerChoice();
+        const result = playRound(humanChoice, compChoice);
+
+        // Update results and scores
+        if (result === 2) {
+            alert('Human won!');
+            humanScore++;
+        } else if (result === 1) {
+            alert("Computer won");
+            computerScore++;
+        } else {
+            alert("It's a draw.");
+        }
+
+        // Update the displayed result and score
+        updateResults(result, humanScore, computerScore);
+
+        // After 5 rounds, the game ends
+        if (++count >= 5) {
+            alert('The game is now over.');
+            if (humanScore > computerScore) {
+                alert('You won!');
+            } else if (computerScore > humanScore) {
+                alert('The computer won.');
+            } else {
+                alert('It was a draw.');
+            }
+            count = 0;  // Reset round count
+            humanScore = 0;  // Reset scores
+            computerScore = 0; // Reset scores
+
+            // Clear the results div
+            clearResults();
+        }
+    });
+});
